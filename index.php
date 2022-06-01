@@ -72,7 +72,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     $values['abilities'] = json_decode($_COOKIE['abilities_value'], true);
    // Если нет предыдущих ошибок ввода, есть кука сессии, начали сессию и
   // ранее в сессию записан факт успешного логина.
-  session_start();
+  if(session_id()==''){
+  session_start();}
   if (!empty($_COOKIE[session_name()]) && !empty($_SESSION['login'])) {
     // загрузить данные пользователя из БД
     // и заполнить переменную $values
