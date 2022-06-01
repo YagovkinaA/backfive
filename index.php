@@ -215,8 +215,8 @@ $parts=$_POST['parts'];
     setcookie('pass', $pass2);
   // Сохранение в базу данных.
    
-$user = 'u46613';
-$pass = '1591065';
+$user = 'u47478';
+$pass = '2559767';
 $db = new PDO('mysql:host=localhost; dbname=u47478', $user, $pass, array(PDO::ATTR_PERSISTENT => true));
 // Подготовленный запрос. Не именованные метки.
 try {
