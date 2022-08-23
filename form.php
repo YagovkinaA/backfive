@@ -1,251 +1,172 @@
-<?php
-// Отправляем браузеру правильную кодировку,
-// файл index.php должен быть в кодировке UTF-8 без BOM.
-header('Content-Type: text/html; charset=UTF-8');
+<!DOCTYPE html>
+<html lang="ru">
 
-// В суперглобальном массиве $_SERVER PHP сохраняет некторые заголовки запроса HTTP
-// и другие сведения о клиненте и сервере, например метод текущего запроса $_SERVER['REQUEST_METHOD'].
-if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-  // В суперглобальном массиве $_GET PHP хранит все параметры, переданные в текущем запросе через URL.
-   // Массив для временного хранения сообщений пользователю.
-  $messages = array();
-  if (!empty($_COOKIE['save'])) {
-    // Если есть параметр save, то выводим сообщение пользователю.
-    setcookie('save', '', 100000);
-    setcookie('login', '', 100000);
-    setcookie('pass', '', 100000);
-    $messages[] = 'Спасибо, результаты сохранены.';
-      // Если в куках есть пароль, то выводим сообщение.
-    if (!empty($_COOKIE['pass'])) {
-      $messages[] = sprintf('Вы можете <a href="login.php">войти</a> с логином <strong>%s</strong>
-        и паролем <strong>%s</strong> для изменения данных.',
-        strip_tags($_COOKIE['login']),
-        strip_tags($_COOKIE['pass']));
-    }
-  }
-// Складываем признак ошибок в массив.
- $errors = array();
- $errors['name'] = !empty($_COOKIE['name_error']);
- $errors['email'] = !empty($_COOKIE['email_error']);
- $errors['date'] = !empty($_COOKIE['date_error']);
- $errors['pol'] = !empty($_COOKIE['pol_error']);
- $errors['parts'] = !empty($_COOKIE['parts_error']);
- $errors['biography']=!empty($_COOKIE['biography_error']);
-// Выдаем сообщения об ошибках.
- if ($errors['name']) {
-    // Удаляем куку, указывая время устаревания в прошлом.
-    setcookie('name_error', '', 100000);
-    // Выводим сообщение.
-    $messages[] = '<div class="error"> Неверный ввод имени.</div>';
-  }
- if ($errors['email']) {
-    setcookie('email_error', '', 100000);
-    $messages[] = '<div class="error">Неправельный ввод email.</div>';
-  }
- if ($errors['date']) {
-    setcookie('date_error', '', 100000);
-    $messages[] = '<div class="error">Выберите дату.</div>';
-  }
- if ($errors['pol']) {
-    setcookie('pol_error', '', 100000);
-    $messages[] = '<div class="error">Выберите пол.</div>';
-  }
- if ($errors['parts']) {
-    setcookie('parts_error', '', 100000);
-    $messages[] = '<div class="error">Укажите количество конечностей.</div>';
-  }
-  if ($errors['biography']) {
-    setcookie('biography_error', '', 100000);
-    $messages[] = '<div class="error">Раскажите о себе.</div>';
-  }
-// Складываем предыдущие значения полей в массив, если есть.
-  $values = array();
-  $values['name'] = empty($_COOKIE['name_value']) ? '' : strip_tags($_COOKIE['name_value']);
-  $values['email'] = empty($_COOKIE['email_value']) ? '' :  strip_tags($_COOKIE['email_value']);
-  $values['date'] = empty($_COOKIE['date_value']) ? '' :  strip_tags($_COOKIE['date_value']);
-  $values['pol'] = empty($_COOKIE['pol_value']) ? '' : strip_tags($_COOKIE['pol_value']);
-  $values['parts'] = empty($_COOKIE['parts_value']) ? '' : strip_tags($_COOKIE['parts_value']);
-  $values['biography'] = empty($_COOKIE['biography_value']) ? '' :  strip_tags($_COOKIE['biography_value']);
-  if(empty($_COOKIE['abilities_value']))
-    $values['abilities'] = array();
-  else
-    $values['abilities'] = json_decode($_COOKIE['abilities_value'], true);
-   // Если нет предыдущих ошибок ввода, есть кука сессии, начали сессию и
-  // ранее в сессию записан факт успешного логина.
-  if(session_id()==''){
-    session_start();}
-  if (!empty($_COOKIE[session_name()]) && !empty($_SESSION['login'])) {
-    // загрузить данные пользователя из БД
-    // и заполнить переменную $values,
-    // предварительно санитизовав.
-    $db = new PDO('mysql:host=localhost;dbname=u47478', 'u47478', '2559767', array(PDO::ATTR_PERSISTENT => true));
-    
-    $stmt12 = $db->prepare("SELECT * FROM application WHERE id = ?");
-    $stmt12 -> execute([$_SESSION['uid']]);
-    $row = $stmt12->fetch(PDO::FETCH_ASSOC);
-    $values['name'] = strip_tags($row['name']);
-    $values['email'] = strip_tags($row['email']);
-    $values['date'] = $row['date'];
-    $values['pol'] = $row['pol'];
-    $values['parts'] = $row['parts'];
-    $values['biography'] = strip_tags($row['bio']);
 
-  
-    $stmt12 = $db->prepare("SELECT * FROM abilities WHERE id = ?");
-    $stmt12 -> execute([$_SESSION['uid']]);
-    $abilities = array();
-    while($row = $stmt12->fetch(PDO::FETCH_ASSOC)){
-      array_push($abilities, strip_tags($row['ability']));
-    }
-    $values['abilities'] = $abilities;
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>back5</title>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+  <link href="style.css" rel="stylesheet">
+  </head>
 
-    printf('Вход с логином %s, uid %d', $_SESSION['login'], $_SESSION['uid']);
-  }
-  
-  
-  // Включаем содержимое файла form.php.
-  // В нем будут доступны переменные $messages, $errors и $values для вывода 
-  // сообщений, полей с ранее заполненными данными и признаками ошибок.
-  include('form.php');
-}
-else{
-// Иначе, если запрос был методом POST, т.е. нужно проверить данные и сохранить их в XML-файл.
+<body>
+  <div class="container-lg px-0">
+    <div class="main row mx-auto">
+      <?php
+      if (!empty($messages)) {
+        print('<div id="messages">');
+        // Выводим все сообщения.
+        foreach ($messages as $message) {
+          print($message);
+        }
+        print('</div>');
+      }
+      // Далее выводим форму отмечая элементы с ошибками классом error
+      // и задавая начальные значения элементов ранее сохраненными.
+      ?>
 
-// Проверяем ошибки.
-$errors = FALSE;
-if (empty($_POST['name'])) {
- setcookie('name_error', '1', time() + 24 * 60 * 60);
-    $errors = TRUE;
-}
-  else {
-    // Сохраняем ранее введенное в форму значение на месяц.
-    setcookie('name_value', $_POST['name'], time() + 12 * 31 * 24 * 60 * 60);
-  }
-if (empty($_POST['email'])) {
-  setcookie('email_error', '1', time() + 24 * 60 * 60);
-    $errors = TRUE;
-  }
-  else {
-    setcookie('email_value', $_POST['email'], time() + 12 * 31 * 24 * 60 * 60);
-  }
-if (empty($_POST['date'])) {
-  setcookie('date_error', '1', time() + 24 * 60 * 60);
-    $errors = TRUE;
-  }
-  else {
-    setcookie('date_value', $_POST['date'], time() + 12 * 31 * 24 * 60 * 60);
-  }
-  if (empty($_POST['pol'])) {
-    setcookie('pol_error', '1', time() + 24 * 60 * 60);
-    $errors = TRUE;
-  }
-  else {
-    setcookie('pol_value', $_POST['pol'], time() + 12 * 31 * 24 * 60 * 60);
-  }
-   if (empty($_POST['parts'])) {
-    setcookie('parts_error', '1', time() + 24 * 60 * 60);
-    $errors = TRUE;
-  }
-  else {
-    setcookie('parts_value', $_POST['parts'], time() + 12 * 31 * 24 * 60 * 60);
-  }
-if (empty($_POST['biography'])) {
-  setcookie('biography_error', '1', time() + 24 * 60 * 60);
-    $errors = TRUE;
-  }
-  else {
-    setcookie('biography_value', $_POST['biography'], time() + 12 * 31 * 24 * 60 * 60);
-  }
-   if(!empty($_POST['abilities'])){
-    $json = json_encode($_POST['abilities']);
-    setcookie ('abilities_value', $json, time() + 12 * 31 * 24 * 60 * 60);
-  }
-if ($errors) {
-  // При наличии ошибок перезагружаем страницу и завершаем работу скрипта.
-  header('Location: index.php');
-    exit();
-}
-else {
-    // Удаляем Cookies с признаками ошибок.
-    setcookie('name_error', '', 100000);
-    setcookie('email_error', '', 100000);
-    setcookie('date_error', '', 100000);
-    setcookie('pol_error', '', 100000);
-    setcookie('parts_error', '', 100000);
-    setcookie('biography_error', '', 100000);
-  }
-  
-$name=$_POST['name'];
-$email=$_POST['email'];
-$date=$_POST['date'];
-$bio=$_POST['biography'];
-$pol=$_POST['pol'];
-$parts=$_POST['parts'];
- // Проверяем меняются ли ранее сохраненные данные или отправляются новые.
-  if (!empty($_COOKIE[session_name()]) &&
-     session_start() && !empty($_SESSION['login'])) {
-   // Перезаписываем данные в БД новыми данными,
-   // кроме логина и пароля.
-   //Изменение данных в основной таблице
-   $db = new PDO('mysql:host=localhost;dbname=u47478', 'u47478', '2559767', array(PDO::ATTR_PERSISTENT => true));
-   $stmt2 = $db->prepare("UPDATE application SET name = ?, email = ?, date = ?, pol = ?, parts = ?, bio = ? WHERE id =?");
-   $stmt2 -> execute([$_POST['name'], $_POST['email'], $_POST['date'], $_POST['pol'], $_POST['parts'], $_POST['biography'], $_SESSION['uid']]);
-   //Изменение данных в таблице способностей 
-    $stmt2 = $db->prepare("DELETE FROM abilities WHERE id = ?");
-    $stmt2 -> execute([$_SESSION['uid']]);
+      <div id="user_form" class="cal-12 mx-auto">
+        <?php
+        if (!empty($_COOKIE[session_name()]) && !empty($_SESSION['login']))
+          print('<h3 id="form"> FORM<br/>(режим редактирования) </h3>');
+        else
+          print('<h3 id="form"> FORM </h3>');
+        ?>
+        <form action="." method="POST">
 
-    $abilities = $_POST['abilities'];
+          <div class="group">
+            <input name="name" type="text" class="textInput" <?php if ($errors['name']) {
+                                                                print 'class="error"';
+                                                              } ?> value="<?php print $values['name']; ?>" required>
+            <span class="bar"></span>
+            <label class="textInputLabel">Имя</label>
+          </div>
+          <div class="group">
+            <input name="email" type="email" class="textInput" <?php if ($errors['email']) {
+                                                                  print 'class="error"';
+                                                                } ?> value="<?php print $values['email']; ?>" required>
+            <span class="bar"></span>
+            <label class="textInputLabel">Email</label>
+          </div>
+          <div class="group">
+            <input name="bd" type="date" class="textInput" <?php if ($errors['bd']) {
+                                                              print 'class="error"';
+                                                            } ?> value="<?php print $values['bd']; ?>" required>
+            <span class="bar"></span>
+          </div>
 
-    foreach($abilities as $item) {
-      $stmt = $db->prepare("INSERT INTO abilities SET id = ?, ability = ?");
-      $stmt -> execute([$_SESSION['uid'], $item]);
-    }
-// Сохраняем куку с признаком успешного сохранения.
-  setcookie('save', '1');
 
-  // Делаем перенаправление.
-  header('Location: index.php');
-  }
-  else {
-    //Создаём уникальный логин и пароль
-   $st=uniqid();
-    $fir=md5($st);
-    $login=substr($st,10,20);
-    $pass2=md5($fir);
-     setcookie('login', $login);
-    setcookie('pass', $pass2);
-  // Сохранение в базу данных.
-   
-$user = 'u47478';
-$pass = '2559767';
-$db = new PDO('mysql:host=localhost; dbname=u47478', $user, $pass, array(PDO::ATTR_PERSISTENT => true));
-// Подготовленный запрос. Не именованные метки.
-try {
-  $stmt = $db->prepare("INSERT INTO application SET name = ?, email = ?, date=?, pol= ?, parts= ?, bio= ?");
-  $stmt -> execute([$_POST['name'], $_POST['email'], $_POST['date'], $_POST['pol'], $_POST['parts'], $_POST['biography']]);
-  
-  $res = $db->query("SELECT max(id) FROM application");
-    $row = $res->fetch();
-    $count = (int) $row[0];
-  $abilities = $_POST['abilities'];
-  foreach($abilities as $item) {
-      // Запись в таблицу abilities
-      $stmt = $db->prepare("INSERT INTO abilities SET id = ?, ability = ?");
-      $stmt -> execute([$count, $item]);
-    }
-  $stmt = $db->prepare("INSERT INTO login_pass SET id = ?, login = ?, pass = ?");
-    $stmt -> execute([$count, $login, md5($pass2)]);
-}
-catch(PDOException $e){
-  print('Error : ' . $e->getMessage());
-  exit();
-}
 
- // Сохраняем куку с признаком успешного сохранения.
-  setcookie('save', '1');
+          <label class="selectLabel">Выберите пол:</label>
+          <br>
+          <label class="labelRadio" for="rdo1">
+            <input type="radio" id="rdo1" name="pol" value="M" <?php if ($values['pol'] == 'M') {
+                                                                  print 'checked';
+                                                                } ?>>
+            <span class="rdo"></span>
+            <span>Муж</span>
+          </label>
+          <label class="labelRadio" for="rdo2">
+            <input type="radio" id="rdo2" name="pol" value="F" <?php if ($values['pol'] == 'F') {
+                                                                  print 'checked';
+                                                                } ?>>
+            <span class="rdo"></span>
+            <span>Жен</span>
+          </label>
 
-  // Делаем перенаправление.
-  header('Location: index.php');
-}
-}
-?>
+
+          <br>
+          <label class="selectLabel">Выберите количество конечностей:</label>
+          <br>
+          <label class="labelRadio" for="rdo3">
+            <input type="radio" id="rdo3" name="limbs" value="3" <?php if ($values['limbs'] == '3') {
+                                                                    print 'checked';
+                                                                  } ?>>
+            <span class="rdo"></span>
+            <span>3</span>
+          </label>
+          <label class="labelRadio" for="rdo4">
+            <input type="radio" id="rdo4" name="limbs" value="4" <?php if ($values['limbs'] == '4') {
+                                                                    print 'checked';
+                                                                  } ?>>
+            <span class="rdo"></span>
+            <span>4</span>
+          </label>
+
+          <br>
+
+          <label class="selectLabel" for="multi-select">Выберите свои сверхспособности:</label>
+          <div class="select select--multiple">
+            <select name="superpowers[]" id="multi-select" multiple>
+              <option value="1" <?php if ($values['superpowers']['0']) {
+                                  print 'selected';
+                                } ?>>Бессмертие</option>
+              <option value="2" <?php if ($values['superpowers']['1']) {
+                                  print 'selected';
+                                } ?>>Бестленность</option>
+              <option value="3" <?php if ($values['superpowers']['2']) {
+                                  print 'selected';
+                                } ?>>Левитация</option>
+              <option value="4" <?php if ($values['superpowers']['3']) {
+                                  print 'selected';
+                                } ?>>Невидимость</option>
+            </select>
+            <span class="focus"></span>
+          </div>
+
+
+          <br>
+          <div class="submitStyle">
+            Биография:
+            <textarea name="bio">Ктоя?</textarea>
+          </div>
+
+
+          <br>
+
+
+          <div class="input_checkbox_list">
+            <div class="checkbox_item">
+              <input name="contract" type="checkbox" <?php if ($errors['contract']) {
+                                                        print 'class="error"';
+                                                      } ?> id="check2" class="input-checkbox filled-in">
+              <label for="check2">С контрактом ознакомлен</label>
+            </div>
+          </div>
+
+
+          <br>
+          <div class="submitStyle">
+            <input type="submit" value="Отправить">
+          </div>
+
+
+        </form>
+      </div>
+    </div>
+    <nav id="navi">
+      <ul>
+        <li>
+          <?php
+          if (!empty($_COOKIE[session_name()]) && !empty($_SESSION['login']))
+            print('<a href="./?quit=1" class = "gradient-button" title = "Log in">Выйти</a>');
+          else
+            print('<a href="login.php" class = "gradient-button"  title = "Log out">Войти</a>');
+          ?></li>
+      </ul>
+    </nav>
+
+  </div>
+  <a id="end"></a>
+  <footer class="foot">
+    <div id=contacts>
+      <h4>kubsu 22<a href="5/solo.html">/</a>q</h4>
+    </div>
+  </footer>
+</body>
+
+</html>

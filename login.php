@@ -1,16 +1,26 @@
 <!DOCTYPE html>
 <html lang="ru">
+
+
   <head>
       <meta charset="utf-8"/>
-      <title>Задание 5 авторизация</title>
-    <style>
-    .error {
-	border: 2px solid red;
-	}
-    </style>
-    </head>
+      <title>LOGback5</title>
+       <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+		<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+       <link href="style.css" rel="stylesheet">
+      
+  </head>
+
   <body>
-<h2>Введите логин и пароль, чтобы авторизоваться:</h2>
+    <div class="container-lg px-0">
+
+    <div class="main  row mx-auto">
+    <section id="form">
+    <h2>Авторизация</h2>
+
+
 <?php
 
 /**
@@ -46,37 +56,55 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     print("<div>Пользователя с таким логином не существует</div>");
   if (!empty($_GET['wrongpass']))
     print("<div>Неверный пароль!</div>");
+
+
 ?>
-    <form action="" method="POST">
-      <input type="text" name="login" placeholder="логин"/>
-      <input type="text" name="pass" placeholder="пароль"/>
-      <input type="submit" name="submit" id="submit" value="Войти" />
-    </form>
-    <?php
+
+  <div class="login-page">
+        <div class="form">
+          <form class="login-form" action="" method="post">
+            <input class="input-field" name="login"  placeholder="логин"/>
+            <input class="input-field" name="pass" placeholder="пароль"/>
+            <input class="gradient-button" type="submit" value="войти">
+          </form>
+        </div>
+  </div>
+
+
+<?php
 }
-    else{
-      $db = new PDO('mysql:host=localhost;dbname=u47478', 'u47478', '2559767', array(PDO::ATTR_PERSISTENT => true));
-  $stmt1 = $db->prepare("SELECT id, pass FROM login_pass WHERE login = ?");
-  $stmt1 -> execute([$_POST['login']]);
+// Иначе, если запрос был методом POST, т.е. нужно сделать авторизацию с записью логина в сессию.
+
+else {
+  $user = 'root';
+  $pass = 'root';
+  $db = new PDO('mysql:host=localhost; dbname=baza3', $user, $pass, array(PDO::ATTR_PERSISTENT => true));
+
+  $stmt1 = $db->prepare('SELECT  user_id, hash_pass FROM FORM WHERE login = ?');
+  $stmt1->execute([$_POST['login']]);
+
   $row = $stmt1->fetch(PDO::FETCH_ASSOC);
   if (!$row) {
     header('Location: ?nologin=1');
     exit();
   }
-  if($row['pass'] != md5($_POST['pass'])) {
+  
+  $pass_hash = substr(hash("sha256", $_POST['pass']), 0, 20);
+  if ($row['hash_pass'] != $pass_hash) {
     header('Location: ?wrongpass=1');
     exit();
   }
   // Если все ок, то авторизуем пользователя.
   $_SESSION['login'] = $_POST['login'];
   // Записываем ID пользователя.
-  $_SESSION['uid'] = $row["id"];
+  $_SESSION['uid'] = $row['user_id'];
 
   // Делаем перенаправление.
   header('Location: ./');
 }
-
 ?>
 
+</section>
+</div>
 </body>
 </html>
